@@ -1,0 +1,424 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>AppHealthssss</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.1/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.1/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-bootstrap/0.27.3/react-bootstrap.min.js"></script>
+    <script src="http://fb.me/JSXTransformer-0.12.2.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+    <link rel="stylesheet" href="stylesheets/style.css"
+  </head>
+  <body>
+    <div id="content"></div>
+    <div id="navigation"></div>
+	<script type="text/jsx" src="navigation.js"></script>		
+    <script type="text/jsx" src="status_row.js"></script>
+    <script type="text/jsx" src="status_table.js"></script>
+
+		
+
+      
+
+	ReactDOM.render(<HealthData source="http://localhost:3000/api/apphealth"/>, document.getElementById('content'));
+    </script>
+  </body>
+</html>
+
+
+---components--
+main.jsx
+
+var ScreenList = require('./screen_list.jsx');
+var Navigation = require('./navigation.jsx');
+var Header = require('./header.jsx');
+var React = require('react');
+var ReactDOM = require('react-dom');
+var Notification = require('react-web-notification');
+var Main = React.createClass({
+	getInitialState: function() {
+        return {
+            screen_service_name : ""
+        };
+    },
+
+	  handlePermissionGranted: function(){
+	    console.log('Permission Granted');
+	    this.setState({
+	      ignore: false
+	    });
+	  },
+	  handlePermissionDenied: function(){
+	    console.log('Permission Denied');
+	    this.setState({
+	      ignore: true
+	    });
+	  },
+	  handleNotSupported: function(){
+	    console.log('Web Notification not Supported');
+	    this.setState({
+	      ignore: true
+	    });
+	  },
+
+	  handleNotificationOnClick: function(e, tag){
+	    console.log(e, 'Notification clicked tag:' + tag);
+	  },
+
+	  handleNotificationOnError: function(e, tag){
+	    console.log(e, 'Notification error tag:' + tag);
+	  },
+
+	  handleNotificationOnClose: function(e, tag){
+	    console.log(e, 'Notification closed tag:' + tag);
+	  },
+
+	  handleNotificationOnShow: function(e, tag){
+	    console.log(e, 'Notification shown tag:' + tag);
+	  },
+
+	render: function() {
+		return(
+		<div className="page">
+		  <div className="pageHeader">
+		    <div className="title">NMC Health Monitor</div>
+		  </div>
+		  <div className="main">
+		  	<Navigation />
+		  	<div className="view">
+		  		<Header />
+		  		<div className = "content">
+		  			<ScreenList source="http://localhost:3000/api/getapphealth" />
+		  			
+		  		</div>
+		  	</div>
+
+		  </div>
+		  
+		  <Notification
+	          ignore={this.state.ignore && this.state.screen_service_name !== ''}
+	          notSupported={this.handleNotSupported.bind(this)}
+	          onPermissionGranted={this.handlePermissionGranted.bind(this)}
+	          onPermissionDenied={this.handlePermissionDenied.bind(this)}
+	          onShow={this.handleNotificationOnShow.bind(this)}
+	          onClick={this.handleNotificationOnClick.bind(this)}
+	          onClose={this.handleNotificationOnClose.bind(this)}
+	          onError={this.handleNotificationOnError.bind(this)}
+	          timeout={5000}
+	          title={this.state.screen_service_name}
+	          options={this.state.options}
+          />
+
+		</div>  
+		);
+	},
+
+	componentDidMount: function() {
+		var socket = io('http://localhost:3000');
+		socket.on('service_screen_error', this._setNotificationsData);
+
+	},	
+
+	_setNotificationsData(data) {
+		const now = Date.now();
+
+	    const title = 'React-Web-Notification' + now;
+	    const body = 'Hello' + new Date();
+	    const tag = now;
+	    const icon = 'http://georgeosddev.github.io/react-web-notification/example/Notifications_button_24.png';
+	    // const icon = 'http://localhost:3000/Notifications_button_24.png';
+
+	    // Available options
+	    // See https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification
+	    const options = {
+	      tag: tag,
+	      body: body,
+	      icon: icon,
+	      lang: 'en',
+	      dir: 'ltr'
+	    }
+
+		this.setState({
+            screen_service_name: data.screen_name + " down",
+            options: options
+        })
+	}
+
+	  
+});
+
+ReactDOM.render(<Main />, document.getElementById('content'));var ScreenList = require('./screen_list.jsx');
+var Navigation = require('./navigation.jsx');
+var Header = require('./header.jsx');
+var React = require('react');
+var ReactDOM = require('react-dom');
+var Notification = require('react-web-notification');
+var Main = React.createClass({
+	getInitialState: function() {
+        return {
+            screen_service_name : ""
+        };
+    },
+
+	  handlePermissionGranted: function(){
+	    console.log('Permission Granted');
+	    this.setState({
+	      ignore: false
+	    });
+	  },
+	  handlePermissionDenied: function(){
+	    console.log('Permission Denied');
+	    this.setState({
+	      ignore: true
+	    });
+	  },
+	  handleNotSupported: function(){
+	    console.log('Web Notification not Supported');
+	    this.setState({
+	      ignore: true
+	    });
+	  },
+
+	  handleNotificationOnClick: function(e, tag){
+	    console.log(e, 'Notification clicked tag:' + tag);
+	  },
+
+	  handleNotificationOnError: function(e, tag){
+	    console.log(e, 'Notification error tag:' + tag);
+	  },
+
+	  handleNotificationOnClose: function(e, tag){
+	    console.log(e, 'Notification closed tag:' + tag);
+	  },
+
+	  handleNotificationOnShow: function(e, tag){
+	    console.log(e, 'Notification shown tag:' + tag);
+	  },
+
+	render: function() {
+		return(
+		<div className="page">
+		  <div className="pageHeader">
+		    <div className="title">NMC Health Monitor</div>
+		  </div>
+		  <div className="main">
+		  	<Navigation />
+		  	<div className="view">
+		  		<Header />
+		  		<div className = "content">
+		  			<ScreenList source="http://localhost:3000/api/getapphealth" />
+		  			
+		  		</div>
+		  	</div>
+
+		  </div>
+		  
+		  <Notification
+	          ignore={this.state.ignore && this.state.screen_service_name !== ''}
+	          notSupported={this.handleNotSupported.bind(this)}
+	          onPermissionGranted={this.handlePermissionGranted.bind(this)}
+	          onPermissionDenied={this.handlePermissionDenied.bind(this)}
+	          onShow={this.handleNotificationOnShow.bind(this)}
+	          onClick={this.handleNotificationOnClick.bind(this)}
+	          onClose={this.handleNotificationOnClose.bind(this)}
+	          onError={this.handleNotificationOnError.bind(this)}
+	          timeout={5000}
+	          title={this.state.screen_service_name}
+	          options={this.state.options}
+          />
+
+		</div>  
+		);
+	},
+
+	componentDidMount: function() {
+		var socket = io('http://localhost:3000');
+		socket.on('service_screen_error', this._setNotificationsData);
+
+	},	
+
+	_setNotificationsData(data) {
+		const now = Date.now();
+
+	    const title = 'React-Web-Notification' + now;
+	    const body = 'Hello' + new Date();
+	    const tag = now;
+	    const icon = 'http://georgeosddev.github.io/react-web-notification/example/Notifications_button_24.png';
+	    // const icon = 'http://localhost:3000/Notifications_button_24.png';
+
+	    // Available options
+	    // See https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification
+	    const options = {
+	      tag: tag,
+	      body: body,
+	      icon: icon,
+	      lang: 'en',
+	      dir: 'ltr'
+	    }
+
+		this.setState({
+            screen_service_name: data.screen_name + " down",
+            options: options
+        })
+	}
+
+	  
+});
+
+ReactDOM.render(<Main />, document.getElementById('content'));
+
+----------------header.jsx---
+var React = require('react');
+module.exports = React.createClass({
+	render: function() {
+		return(
+			<div className="viewHeader">
+		        <div className="title">Dashboard - Real Time Stats</div>
+		        <div className="functions">
+		          <div className="button active">Add New Screen</div>
+		        </div>
+		     </div>
+		);	
+
+	}
+});
+
+---navigation.jsx---
+var React = require('react');
+module.exports = React.createClass({
+	render: function() {
+		return(
+		    <div className="nav">
+		      <div className="searchbox">
+		        <div><i className="fa fa-search"></i>
+		          <input type="search" placeholder="Search"/>
+		        </div>
+		      </div>
+		      <div className="menu">
+		        <div className="title">Navigation</div>
+		        <ul>
+		          <li> <i className="fa fa-home"></i>Home</li>
+		          <li><i className="fa fa-signal"></i>Settings</li>
+		          <li className="active"> <i className="fa fa-tasks"></i>Add Screen</li>
+		          <li> <i className="fa fa-envelope"></i>Logs</li>
+		        </ul>
+		      </div>
+		    </div>
+		    );
+	}
+});
+
+---component list--
+var React = require('react');
+var ComponentListItems = require('./component_list_items.jsx');
+module.exports = React.createClass({
+	getInitialState: function() {
+        return {
+            screen_status: {},
+            screen_id: 0
+        };
+    },
+
+    componentDidMount: function() {
+        var socket = io('http://localhost:3000');
+        socket.on('apphealth', this._setUpdatedHealthData);
+        $.post("http://localhost:3000/api/postrealtimestatus", function(data, status){
+            console.log("post status is" + status);
+         }); 
+        var screen_type = this.props.type;
+        console.log("SCREEN ID COMING FROM PARENT OBJECT IS" + this.props.screen);
+        $.get(this.props.source, function(result) {
+            if (this.isMounted()) {
+                this.setState({
+                    screen_status: result,
+                    screen_id: this.props.screen
+                });
+                console.log("set screen sgatus");
+            }
+        }.bind(this));
+    },
+
+    _setUpdatedHealthData(data) {
+        this.setState({
+            screen_status: data.screen_status
+        })
+    },
+
+
+
+	render: function() {
+		if (this.state.screen_status != null && this.state.screen_status.length > 0) {
+			var items = [];
+            var state_id = this.props.screen;
+            //Loop through the response and get the dependent services for the screen clicked
+             var test = this.state.screen_status.map(function(screen) {
+                if(state_id == screen.screen_id) {
+                    var dep_services = screen.dependent_services.map(function(services) {
+                        //get the dependent services list and push that to items
+                        items.push(<ComponentListItems screen_name = {services.service_name} screen_status = {services.http_status} screen_id = {services.service_id} callBackParent={self}/>);        
+                    });
+                }
+            });
+
+
+			return(
+				<div className="list">
+	          		<div className="title">Services - {this.props.screen}</div>
+	          		<ul>
+	          			{items}
+	          		</ul>
+	          	</div>		
+			);
+		} else {
+            return (
+                <span>Loading</span>
+            );
+        }
+		
+	}
+});	
+
+---component list items--
+var React = require('react');
+module.exports = React.createClass({
+
+	
+
+	onScreenListClick: function(evt) {
+        console.log("clicked screen for id" + this.props.screen_id);
+        var callBackParentObj = {
+        	selected: true,
+        	screen_id: this.props.screen_id
+        }
+        //this.props.callBackParent(true);
+        this.props.callBackParent(callBackParentObj);
+        //need to call components list by passing in this ID
+    },
+
+    checkScreenStatus: function(screen_status) {
+        if(screen_status == 200) {
+            return <div className="button green">UP</div>
+        }
+        else {
+            return <div className="button red">DOWN</div>     
+        }
+    },
+
+	render: function() {
+		return(
+			<li onClick={this.onScreenListClick}><span>{this.props.screen_name}</span>
+              <div className="info">
+                {this.checkScreenStatus(this.props.screen_status)}
+              </div>
+            </li> 
+		);
+	}
+});		
+
+
+
